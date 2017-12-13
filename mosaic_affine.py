@@ -15,14 +15,6 @@ import numpy as np
 import cv2
 
 
-'''
-print("-"*20) 
-M1 = np.array([[1,0,2], [0,2,3]])
-M2 = np.array([[1,0,2], [0,3,3]])
-M12 = affine_composition(M1,M2)
-print(M12)
-print("-"*20) 
-'''
 
 class App:
     def __init__(self, video_src):
@@ -94,24 +86,27 @@ class App:
             
             
             # Track transformation
+            incr_track = 1.
+            incr_track_mat = 1.
             if(self.frame_idx % self.detect_interval == 0):
                 M_incr = cv2.estimateRigidTransform(curr, prev, False)
-                
+                incr_track *= M_incr[0,0]
+                print "incr: {}".format(incr_track)
                 if M_incr is None:
                     print("Panic")
                     
                 else:
                     M_integrate = self.affine_composition(M_incr, M_integrate)
-                    print M_integrate[0,0]
+                    incr_track_mat = M_integrate[0,0]
+                    print "incm {}".format(incr_track_mat)
+                    #print M_integrate[0,0]
                     new_frame = cv2.warpAffine(curr, M_integrate, (curr.shape[1]*BIG_SIZE, curr.shape[0]*BIG_SIZE))
-                    print new_frame.shape
                     
                     mosaic = np.where(new_frame == 0, mosaic, new_frame)
                     cv2.imshow('mosaic', mosaic)
                     prev = curr
             
-                
-            
+
             cv2.imshow('video', curr)
 
             # Read keyboard
